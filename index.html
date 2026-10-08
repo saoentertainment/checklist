@@ -298,7 +298,10 @@
     <p style="font-size:0.85em; color:#ffb74d; margin-bottom:10px;">
       Sube el archivo JSON exportado previamente. Se mantendrá tu historial actual.
     </p>
-    <input type="file" id="importFile" accept=".json" onchange="importConfig(event)">
+    <label for="importFile" style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #2e7d32, #43a047); color: white; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.95em; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: transform 0.2s;">
+      📂 Seleccionar archivo
+    </label>
+    <input type="file" id="importFile" accept=".json" onchange="importConfig(event)" style="display: none;">
   </div>
 
   <footer>
@@ -374,7 +377,7 @@ const CHECKLIST = [
         "1 Bocina Alto TS15 + Funda",
         "1 Subwoofer ALTO 12\" + Funda",
         "Maleta con soportes para bocinas",
-        "Soporte Pantalla",
+        { name: "Soportes de Pantalla", hasQuantity: true },
         "Micrófonos PHENYX + Módulo y Plug + Eliminador + Estrellas protectoras",
         "Micrófonos STEREN + Módulo y Plug + Eliminador + Estrellas protectoras",
         "Micrófono SHURE SM58",
@@ -830,22 +833,52 @@ function exportConfig() {
 function importConfig(event) {
   const file = event.target.files[0];
   if (!file) return;
-  if (!confirm('⚠️ ¿Importar configuración? Se mantendrá tu historial actual.')) { event.target.value = ''; return; }
+  
+  if (!confirm('⚠️ ¿Importar configuración? Se mantendrá tu historial actual.')) { 
+    event.target.value = ''; 
+    return; 
+  }
+  
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
       const config = JSON.parse(e.target.result);
-      if (!config.data || !config.data.current) throw new Error('Formato inválido');
+      
+      // Validación flexible: acepta tanto formato de app principal como de app rápida
+      if (!config.data) throw new Error('Archivo no válido: falta la sección "data"');
+      
       const currentStorage = getStorage();
-      currentStorage.current = config.data.current;
-      if (config.data.history && Array.isArray(config.data.history)) {
-        const existingIds = new Set(currentStorage.history.map(e => e.id));
-        config.data.history.forEach(event => { if (!existingIds.has(event.id)) { currentStorage.history.push(event); } });
+      
+      // Si viene de la app principal (tiene current y history)
+      if (config.data.current && config.data.history) {
+        currentStorage.current = config.data.current;
+        // Combinar historiales sin duplicados
+        if (Array.isArray(config.data.history)) {
+          const existingIds = new Set(currentStorage.history.map(e => e.id));
+          config.data.history.forEach(event => { 
+            if (!existingIds.has(event.id)) { 
+              currentStorage.history.push(event); 
+            } 
+          });
+        }
+      } 
+      // Si viene de la app rápida (solo tiene checks, notes, quantities)
+      else if (config.data.checks) {
+        currentStorage.current.checks = config.data.checks;
+        if (config.data.notes) currentStorage.current.notes = config.data.notes;
+        if (config.data.quantities) currentStorage.current.quantities = config.data.quantities;
+        alert('️ Detectamos un archivo de la App Rápida. Solo importaremos los checks y notas.');
+      } 
+      else {
+        throw new Error('Formato de archivo no reconocido');
       }
+      
       setStorage(currentStorage);
       render();
-      alert('✅ Configuración importada. Tu historial está a salvo.');
-    } catch (err) { alert('❌ Error al importar: archivo inválido'); }
+      alert('✅ Configuración importada correctamente. Tu historial está a salvo.');
+    } catch (err) { 
+      alert('❌ Error al importar: ' + err.message); 
+    }
     event.target.value = '';
   };
   reader.readAsText(file);
