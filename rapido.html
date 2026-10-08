@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a1929">
+<title>Checklist Rápido - TOTAL FEST</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%); color: #e3f2fd; min-height: 100vh; padding: 15px; padding-bottom: 80px; }
+  .container { max-width: 800px; margin: 0 auto; }
+  header { text-align: center; padding: 20px; background: rgba(33, 150, 243, 0.1); border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(33, 150, 243, 0.3); }
+  h1 { font-size: 1.5em; color: #64b5f6; margin-bottom: 5px; }
+  .subtitle { font-size: 0.85em; color: #90caf9; opacity: 0.8; }
+  .progress-bar { width: 100%; height: 24px; background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden; margin: 15px 0; border: 1px solid rgba(100, 181, 246, 0.2); }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #1976d2, #42a5f5); transition: width 0.3s ease; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8em; color: #fff; }
+  #progressText { font-size: 0.85em; color: #90caf9; text-align: center; margin-bottom: 20px; }
+  .main-section { background: rgba(13, 71, 161, 0.2); border: 1px solid rgba(33, 150, 243, 0.3); border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+  .main-section-header { padding: 15px; background: rgba(25, 118, 210, 0.3); cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .main-section-header h2 { font-size: 1.1em; color: #bbdefb; }
+  .section-count { background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 12px; font-size: 0.8em; color: #64b5f6; }
+  .main-section-content { display: none; }
+  .main-section.open .main-section-content { display: block; }
+  .sub-section { border-bottom: 1px solid rgba(100, 181, 246, 0.1); }
+  .sub-section:last-child { border-bottom: none; }
+  .sub-section-header { padding: 12px 15px; background: rgba(25, 118, 210, 0.1); cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .sub-section-header h3 { font-size: 0.95em; color: #90caf9; }
+  .sub-count { background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.75em; color: #64b5f6; }
+  .sub-section-content { padding: 5px 10px; display: none; }
+  .sub-section.open .sub-section-content { display: block; }
+  .item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid rgba(100, 181, 246, 0.05); gap: 10px; flex-wrap: wrap; }
+  .item:last-child { border-bottom: none; }
+  .item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; accent-color: #42a5f5; flex-shrink: 0; }
+  .item label { cursor: pointer; flex: 1; font-size: 0.9em; color: #e3f2fd; min-width: 180px; }
+  .item.checked label { text-decoration: line-through; opacity: 0.5; color: #90caf9; }
+  .item.checked { background: rgba(25, 118, 210, 0.1); }
+  .item-quantity { display: flex; align-items: center; gap: 5px; margin-left: 10px; }
+  .item-quantity label { font-size: 0.8em; color: #90caf9; margin: 0; min-width: auto; text-decoration: none !important; opacity: 1 !important; }
+  .item-quantity input { width: 50px; padding: 4px; background: rgba(13, 71, 161, 0.5); border: 1px solid rgba(100, 181, 246, 0.4); border-radius: 5px; color: #fff; font-size: 0.85em; text-align: center; }
+  .notes { width: 100%; margin: 5px 0 10px; padding: 8px; background: rgba(13, 71, 161, 0.4); border: 1px solid rgba(100, 181, 246, 0.2); border-radius: 6px; color: #fff; resize: vertical; min-height: 40px; font-size: 0.85em; }
+  .notes::placeholder { color: rgba(255,255,255,0.4); }
+  .actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+  button, .btn-file { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: transform 0.2s; color: white; text-align: center; }
+  button:active, .btn-file:active { transform: scale(0.95); }
+  .btn-reset { background: linear-gradient(135deg, #d32f2f, #f44336); }
+  .btn-expand { background: linear-gradient(135deg, #5e35b1, #7e57c2); }
+  .btn-config { background: linear-gradient(135deg, #ef6c00, #fb8c00); }
+  .btn-import { background: linear-gradient(135deg, #2e7d32, #43a047); display: inline-block; }
+  footer { text-align: center; padding: 20px; opacity: 0.5; font-size: 0.8em; color: #90caf9; margin-top: 30px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📋 CHECKLIST RÁPIDO</h1>
+    <div class="subtitle">TOTAL FEST - Modo Respaldo</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill">0%</div></div>
+    <div id="progressText">0 de 0 items listos</div>
+  </header>
+  <div id="sections"></div>
+  
+  <div class="actions">
+    <button class="btn-expand" onclick="toggleAll()">📂 Expandir/Colapsar</button>
+    <button class="btn-config" onclick="exportConfig()">⬇️ Exportar</button>
+    <label class="btn-file btn-import">
+      ⬆️ Importar
+      <input type="file" id="importFile" accept=".json" onchange="importConfig(event)" style="display: none;">
+    </label>
+  </div>
+  <div style="display: flex; justify-content: center; margin-top: 10px;">
+    <button class="btn-reset" onclick="doReset()">🔄 Reset Todo</button>
+  </div>
+  <footer>Modo Lite - Datos guardados localmente 🤘</footer>
+</div>
+
+<script>
+const CHECKLIST = [
+  { title: "🅰️ SECCIÓN 1: KARAOKE + DJ", subsections: [
+    { title: "🔊 1.1 Sonido", items: ["2 Bocinas ALTO 10\" + Fundas", "1 Bocinas ALTO 15\" + Funda", "1 Bocina Alto TS15 + Funda", "1 Subwoofer ALTO 12\" + Funda", "Maleta con soportes para bocinas", "Soporte Pantalla", "Micrófonos PHENYX + Módulo y Plug + Eliminador + Estrellas protectoras", "Micrófonos STEREN + Módulo y Plug + Eliminador + Estrellas protectoras", "Micrófono SHURE SM58", "Interfaz Behringer UMC 404 + USB", "Interfaz Behringer UCA 202 + USB", "Mezcladora Behringer + Eliminador de Corriente"] },
+    { title: "📺 1.2 Video y Pantallas", items: ["Pantalla 42\" + estuche + control", "Pantalla 43\" TCL QLED", "Monitor 15\" ligero + cables", "Pantalla 19\" AOC + control + base", "Pantalla 20\" Mitsui + control + base", "Soporte para laptop y monitor ligero 15\" (Brazos Robot)", "Soportes de piso para Pantallas HERCULES (StagePrompt)"] },
+    { title: "💡 1.3 Iluminación", items: ["2 Barras de luces LED + estuche", "3 Luces LED + 1 rectangulo LED + estuche", "Maleta con 2 luces robóticas", "Maleta con 2 luces BEAM", "Clamps para luces + hule espuma", "Lámparas: Blanca, Mini y para Laptop + Cables USB", { name: "Cables de Corriente para Luces", hasQuantity: true }] },
+    { title: "💻 1.4 Cómputo y DJ", items: ["Módulo desarmable para DJ + Patitas", "Cabina DJ + Estuche", "Laptop + Estuche", "Disco duro externo SSD Azul", "Extensor USB C", "Wav Link (transmisor HDMI inalámbrico)", "EDID HDMI + Cables", "HUB USB", "Audífonos + soporte + soporte vaso", "Mouse + Mouse pad"] },
+    { title: "🔌 1.5 Cables y Energía", items: ["Regulador de energía FURMAN", "Maleta de cables de audio", { name: "Cables TS 1/4", hasQuantity: true }, { name: "Cables XLR", hasQuantity: true }, "Cable TS 1/8 a TS 1/4 (L/R)", "Maleta de adaptadores (verde)", "Maleta de extensiones de luz y multicontactos", { name: "Extensiones de luz", hasQuantity: true }, { name: "Multicontactos", hasQuantity: true }, { name: "Cables HDMI largos", hasQuantity: true }, { name: "Cables HDMI cortos", hasQuantity: true }, "Splitters + eliminador", "Herramienta", { name: "Clips para Cables Soporte Bocina", hasQuantity: true }, { name: "Cables de corriente para bocinas", hasQuantity: true }, "Velcros"] },
+    { title: "🎒 1.6 Logística, Docs y Personal", items: ["Carrito transportador", "Atril partituras (Para Micrófonos inalámbricos)", "Docs: Hojas de peticiones, QR, plumas, tarjetas de presentación", "Pilas (¡cargarlas!) + Líquido limpiador de micrófono", "Vestuario: Maletas con accesorios + ropa en gancho", "Hospitalidad: Almuerzo + Electrolit"] }
+  ]},
+  { title: "🅱️ SECCIÓN 2: MÚSICA EN VIVO", subsections: [
+    { title: " 2.1 Instrumentos y Amplificación", items: ["BATTALION + eliminador", "Afinador + eliminador", "Amplificador BUGERA + cable de corriente + Estuche", "Bajo GL + Estuche", "Bajo FACTOR + Estuche", "THALI", "Soporte para Batallion + cable corriente", "Cuerdas de repuesto"] },
+    { title: "🎤 2.2 Audio y Cables", items: ["Micrófono SHURE SM58 (voz)", "Cables Plug (2)", "Cable XLR Voz", "2 cables XLR Salida Bugera", "Cables Plugs extra", "Clips de atril para cables de micrófono"] },
+    { title: "📱 2.3 Soportes", items: ["Atril para micrófono", "Atriles para bajo", "Atril para teclado", "Clips de atril de teclado para cables", "Tablet + soporte Hercules", "Soporte para celular Hercules", "Soporte para vaso"] },
+    { title: "💻 2.4 Cómputo y Video", items: ["Laptop + eliminador de corriente", "Disco duro negro + cable"] },
+    { title: "🔌 2.5 Energía y Accesorios", items: ["Extensión de luz", "Multicontactos", "Plumillas + PortaPlumillas"] }
+  ]},
+  { title: "🅲️ SECCIÓN 3: REQUISITOS DEL LUGAR", subsections: [
+    { title: "️ Instalación y Espacio", items: ["Acceso al lugar 3 horas antes", "Contactos aterrizados (3 patas) 15A / 110-120 V", "Área despejada aprox 2x2 mts con techo/lona", "Suelo firme y estable", "WiFi disponible"] },
+    { title: "🚛 Logística y Accesos", items: ["Permisos y accesos tramitados", "Acceso vehicular cercano", "Zona de cobertura verificada"] },
+    { title: "📜 Acuerdos y Condiciones", items: ["Cuota sindical cubierta por contratante", "Atención para el staff", "Responsabilidad por daños al equipo 100% en 15 días", "Tiempo contratado ininterrumpido"] }
+  ]}
+];
+
+const STORAGE_KEY = 'checklistRapidoJaviSAO_v3';
+
+function getStorage() { 
+  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); 
+  return { checks: data.checks || {}, notes: data.notes || {}, quantities: data.quantities || {} }; 
+}
+function setStorage(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function getItemName(item) { return typeof item === 'string' ? item : item.name; }
+function getItemHasQuantity(item) { return typeof item === 'object' && item.hasQuantity === true; }
+
+function render() {
+  const storage = getStorage(); 
+  const container = document.getElementById('sections'); 
+  container.innerHTML = '';
+  
+  CHECKLIST.forEach((section, sIdx) => {
+    const sectionDiv = document.createElement('div'); 
+    sectionDiv.className = 'main-section open';
+    let totalItems = 0; 
+    section.subsections.forEach(sub => { sub.items.forEach(() => { totalItems++; }); });
+    
+    sectionDiv.innerHTML = `<div class="main-section-header" onclick="this.parentElement.classList.toggle('open')"><h2>${section.title}</h2><span class="section-count" id="count-s${sIdx}">0/${totalItems}</span></div><div class="main-section-content">${section.subsections.map((sub, subIdx) => {
+      return `<div class="sub-section open"><div class="sub-section-header" onclick="event.stopPropagation(); this.parentElement.classList.toggle('open')"><h3>${sub.title}</h3><span class="sub-count" id="count-s${sIdx}-sub${subIdx}">0/${sub.items.length}</span></div><div class="sub-section-content">${sub.items.map((item, iIdx) => {
+        const key = `s${sIdx}_sub${subIdx}_i${iIdx}`; 
+        const isChecked = storage.checks[key] === true; 
+        const itemName = getItemName(item); 
+        const hasQuantity = getItemHasQuantity(item); 
+        const quantity = storage.quantities[key] || '';
+        let quantityHtml = hasQuantity ? `<div class="item-quantity"><label>Cant:</label><input type="number" min="0" value="${quantity}" onchange="saveQuantity('${key}', this.value)"></div>` : '';
+        return `<div class="item ${isChecked ? 'checked' : ''}"><input type="checkbox" id="${key}" ${isChecked ? 'checked' : ''} onchange="toggleItem('${key}', this)"><label for="${key}">${itemName}</label>${quantityHtml}</div>`;
+      }).join('')}<textarea class="notes" placeholder="Notas..." oninput="saveNotes(${sIdx}, ${subIdx}, this.value)">${storage.notes[`s${sIdx}_sub${subIdx}`] || ''}</textarea></div></div>`;
+    }).join('')}</div>`; 
+    container.appendChild(sectionDiv);
+  }); 
+  updateProgress();
+}
+
+function toggleItem(key, el) {
+  const storage = getStorage(); 
+  storage.checks[key] = el.checked; 
+  setStorage(storage); 
+  el.parentElement.classList.toggle('checked', el.checked); 
+  updateProgress();
+  const parts = key.split('_'); 
+  const sIdx = parseInt(parts[0].replace('s','')); 
+  const subIdx = parseInt(parts[1].replace('sub','')); 
+  const section = CHECKLIST[sIdx];
+  const subChecked = section.subsections[subIdx].items.filter((_, iIdx) => storage.checks[`s${sIdx}_sub${subIdx}_i${iIdx}`]).length;
+  const totalSection = section.subsections.reduce((acc, sub) => acc + sub.items.length, 0);
+  const checkedSection = section.subsections.reduce((acc, sub, idx) => acc + sub.items.filter((_, iIdx) => storage.checks[`s${sIdx}_sub${idx}_i${iIdx}`]).length, 0);
+  document.getElementById(`count-s${sIdx}`).textContent = `${checkedSection}/${totalSection}`;
+  document.getElementById(`count-s${sIdx}-sub${subIdx}`).textContent = `${subChecked}/${section.subsections[subIdx].items.length}`;
+}
+
+function saveQuantity(key, value) { const storage = getStorage(); storage.quantities[key] = value; setStorage(storage); }
+function saveNotes(sIdx, subIdx, value) { const storage = getStorage(); storage.notes[`s${sIdx}_sub${subIdx}`] = value; setStorage(storage); }
+
+function doReset() { 
+  if(confirm('¿Borrar todo el checklist rápido?')) { 
+    localStorage.removeItem(STORAGE_KEY); 
+    render(); 
+  } 
+}
+
+function toggleAll() { 
+  document.querySelectorAll('.main-section').forEach(s => s.classList.toggle('open')); 
+  document.querySelectorAll('.sub-section').forEach(s => s.classList.toggle('open')); 
+}
+
+function updateProgress() {
+  const storage = getStorage(); 
+  let total = 0, checked = 0;
+  CHECKLIST.forEach(s => { s.subsections.forEach(sub => { sub.items.forEach(() => { total++; }); }); });
+  CHECKLIST.forEach((s, sIdx) => { s.subsections.forEach((sub, subIdx) => { sub.items.forEach((_, iIdx) => { if(storage.checks[`s${sIdx}_sub${subIdx}_i${iIdx}`]) checked++; }); }); });
+  const pct = total ? Math.round((checked/total)*100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%'; 
+  document.getElementById('progressFill').textContent = pct + '%';
+  document.getElementById('progressText').textContent = `${checked} de ${total} items listos`;
+}
+
+// --- FUNCIONES DE EXPORTAR E IMPORTAR CORREGIDAS ---
+function exportConfig() {
+  const storage = getStorage();
+  const config = {
+    app: 'TOTAL FEST - Checklist Rápido',
+    version: '1.1',
+    date: new Date().toISOString(),
+    data: storage
+  };
+  const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `checklist_rapido_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  alert('✅ Respaldo exportado correctamente.');
+}
+
+function importConfig(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  if (!confirm('⚠️ ¿Importar configuración? Esto reemplazará los datos actuales de esta app.')) {
+    event.target.value = '';
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const config = JSON.parse(e.target.result);
+      
+      // Validación inteligente: Detecta si viene de la App Principal o de la Rápida
+      let newData;
+      if (config.data && config.data.current && config.data.current.checks) {
+        // Viene de la App Principal
+        newData = {
+          checks: config.data.current.checks || {},
+          notes: config.data.current.notes || {},
+          quantities: config.data.current.quantities || {}
+        };
+        alert('⚠️ Detectamos un archivo de la App Principal. Solo importaremos los checks y notas del evento actual.');
+      } else if (config.data && config.data.checks) {
+        // Viene de la App Rápida
+        newData = config.data;
+      } else {
+        throw new Error('Estructura de archivo no reconocida.');
+      }
+
+      setStorage(newData);
+      render();
+      alert('✅ Configuración importada correctamente.');
+    } catch (err) {
+      alert('❌ Error al importar: ' + err.message);
+    }
+    event.target.value = ''; // Limpiar input para permitir importar el mismo archivo de nuevo si es necesario
+  };
+  reader.readAsText(file);
+}
+
+window.addEventListener('load', render);
+</script>
+</body>
+</html>
